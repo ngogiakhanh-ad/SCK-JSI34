@@ -4,9 +4,22 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, up
 import { getFirestore, doc, setDoc, updateDoc } 
   from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+// ⚡⚡⚡ thêm đoạn này vào trước khi gọi initializeApp
+const firebaseConfig = {
+  apiKey: "AIzaSyBNHeF2yGDf3MDd6bRuSq47Gmcei3bndLI",
+  authDomain: "end-term-23d47.firebaseapp.com",
+  projectId: "end-term-23d47",
+  storageBucket: "end-term-23d47.appspot.com",
+  messagingSenderId: "370557866713",
+  appId: "1:370557866713:web:c31b37081afac84e5ba4c8",
+  measurementId: "G-KRBGK13R6H"
+};
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+
 
 // --- Đăng ký ---
 const registerForm = document.getElementById("registerForm");
@@ -67,7 +80,7 @@ if (loginForm) {
       });
 
       alert(`Đăng nhập thành công! Xin chào ${user.displayName || "bạn"}`);
-      window.location.href = "index.html";
+      window.location.href = "/index.html";
     } catch (error) {
       alert("Đăng nhập thất bại: " + error.message);
     }
