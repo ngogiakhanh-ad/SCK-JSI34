@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chi tiết truyện</title>
+  <style>
+    body { font-family: "Segoe UI", sans-serif; margin: 0; padding: 20px; background: #f4f6f9; }
+    .detail-container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    img { width: 250px; float: left; margin-right: 20px; border-radius: 8px; }
+    h2 { margin-top: 0; }
+    .price { font-size: 20px; font-weight: bold; color: #673ab7; }
+    .back { display: inline-block; margin-top: 20px; text-decoration: none; background: #673ab7; color: white; padding: 10px 20px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="detail-container">
+    <img id="comicImage" src="" alt="">
+    <h2 id="comicTitle"></h2>
+    <p class="price" id="comicPrice"></p>
+    <p id="comicCategory"></p>
+    <p id="comicDescription"></p>
+    <a class="back" href="../index.html">⬅ Quay lại</a>
+  </div>
+
+  <script>
+    // Lấy ID từ URL
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get("title");
+    const price = params.get("price");
+    const image = params.get("image");
+    const category = params.get("category");
+    const desc = params.get("desc");
+
+    // Hiển thị dữ liệu
+    document.getElementById("comicTitle").textContent = title;
+    document.getElementById("comicPrice").textContent = price + " VNĐ";
+    document.getElementById("comicImage").src = image;
+    document.getElementById("comicCategory").textContent = "Thể loại: " + category;
+    document.getElementById("comicDescription").textContent = desc || "Chưa có mô tả cho truyện này.";
+  </script>
+</body>
+</html>

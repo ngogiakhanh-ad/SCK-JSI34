@@ -40,7 +40,7 @@ export async function signUp(email, password, role_id) {
 // Hàm lấy thông tin user từ Firestore
 async function getUserInfoFromFirestore(email) {
   try {
-    const q = query(collection(db, "users"), where("email", "==", email))
+    const q = query(collection(db, "comic-book"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q)
 
     if (!querySnapshot.empty) {

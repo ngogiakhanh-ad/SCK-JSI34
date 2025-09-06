@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>➕ Thêm Sản Phẩm Truyện</title>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: #f4f6f9;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* sửa */
+    min-height: 100vh; /* sửa */
+    margin: 0;
+    padding: 20px; /* thêm để có khoảng trống khi cuộn */
+  }
+
+  .container {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    max-width: 450px;
+    width: 100%;
+  }
+  h2 {
+    text-align: center;
+    color: #673ab7;
+    margin-bottom: 20px;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #333;
+  }
+  input, textarea, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  .preview img {
+    max-width: 200px;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    background: #673ab7;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #5e35b1;
+  }
+  .back-btn {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #673ab7;
+    font-weight: bold;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>➕ Thêm Sản Phẩm Truyện</h2>
+    <form id="addProductForm">
+      <div class="form-group">
+        <label for="title">Tên truyện</label>
+        <input type="text" id="title" required placeholder="Nhập tên truyện">
+      </div>
+      <div class="form-group">
+        <label for="price">Giá (VNĐ)</label>
+        <input type="number" id="price" required placeholder="Nhập giá">
+      </div>
+      <div class="form-group">
+        <label for="stock">Số lượng</label>
+        <input type="number" id="stock" required placeholder="Nhập số lượng">
+      </div>
+      <div class="form-group">
+        <label for="category">Thể loại</label>
+        <select id="category" required>
+          <option value="">-- Chọn thể loại --</option>
+          <option value="Manga">Manga</option>
+          <option value="Light Novel">Light Novel</option>
+          <option value="Comic">Comic</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="imageUrl">Link ảnh bìa</label>
+        <input type="url" id="imageUrl" required placeholder="Dán link ảnh">
+        <div class="preview" id="preview"></div>
+      </div>
+      <button type="submit">Thêm Sản Phẩm</button>
+    </form>
+    <a href="../index.html" class="back-btn">⬅ Quay về cửa hàng</a>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBNHeF2yGDf3MDd6bRuSq47Gmcei3bndLI",
+  authDomain: "end-term-23d47.firebaseapp.com",
+  databaseURL: "https://end-term-23d47-default-rtdb.firebaseio.com",
+  projectId: "end-term-23d47",
+  storageBucket: "end-term-23d47.firebasestorage.app",
+  messagingSenderId: "370557866713",
+  appId: "1:370557866713:web:c31b37081afac84e5ba4c8",
+  measurementId: "G-KRBGK13R6H"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const form = document.getElementById("addProductForm");
+const imageUrlInput = document.getElementById("imageUrl");
+const preview = document.getElementById("preview");
+
+// Hiển thị preview ảnh
+imageUrlInput.addEventListener("input", () => {
+  const url = imageUrlInput.value;
+  preview.innerHTML = url ? `<img src="${url}" alt="Preview">` : "";
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById("title").value.trim();
+  const price = parseFloat(document.getElementById("price").value);
+  const stock = parseInt(document.getElementById("stock").value);
+  const category = document.getElementById("category").value;
+  const imageUrl = imageUrlInput.value.trim();
+
+  if (!title || !price || !stock || !category || !imageUrl) {
+    alert("Vui lòng nhập đầy đủ thông tin!");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "comic-book"), {
+      title,
+      price,
+      stock,
+      category,
+      imageUrl,
+      createdAt: serverTimestamp()
+    });
+    alert("✅ Thêm sản phẩm thành công!");
+    form.reset();
+    preview.innerHTML = "";
+  } catch (error) {
+    console.error("Lỗi:", error);
+    alert("❌ Không thể thêm sản phẩm. Kiểm tra console!");
+  }
+});
+</script>
+</body>
+</html>

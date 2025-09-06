@@ -1,13 +1,338 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Trang Bán Truyện</title>
-  <link rel="stylesheet" href="../css/main.css">
+  <meta charset="UTF-8" />
+  <title>Cửa Hàng Truyện</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f4f6f9;
+    }
+    nav {
+      background: #673ab7;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    nav .logo {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    nav ul li {
+      margin-left: 20px;
+    }
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav ul li a:hover {
+      color: #d1c4e9;
+    }
+    .cart-count {
+      background: #ff5252;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin-left: 5px;
+    }
+    .filter-bar {
+      max-width: 1200px;
+      margin: 20px auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      flex: 1 1 200px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    /* ✅ Chỉnh ảnh bìa chuẩn */
+    .card img {
+      width: 100%;
+      height: 320px;
+      object-fit: contain; /* Hiển thị đủ ảnh, không crop */
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      padding: 10px;
+      box-sizing: border-box;
+      transition: transform 0.3s ease;
+    }
+    .card:hover img {
+      transform: scale(1.05); /* hiệu ứng zoom nhẹ khi hover */
+    }
+    .card-body {
+      padding: 15px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .card-price {
+      color: #673ab7;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .card-category {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 15px;
+    }
+    .buy-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: #673ab7;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .buy-btn:hover {
+      background: #5e35b1;
+    }
+    .empty {
+      text-align: center;
+      font-size: 18px;
+      color: #777;
+      margin-top: 50px;
+    }
+  </style>
 </head>
 <body>
-  <h2>📚 Cửa Hàng Truyện</h2>
-  <div class="grid" id="comicList"></div>
-  <script type="module" src="../js/firebase/show-comics.js"></script>
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">📚 Cửa Hàng Truyện</div>
+    <ul>
+      <li><a href="/html/add-comic.html">Thêm sản phẩm</a></li>
+      <li><a href="html/card.html">Giỏ hàng <span class="cart-count" id="cartCount">0</span></a></li>
+    </ul>
+  </nav>
+
+  <!-- Bộ lọc, tìm kiếm và sắp xếp -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm truyện...">
+    <select id="categoryFilter">
+      <option value="">-- Tất cả thể loại --</option>
+      <option value="Manga">Manga</option>
+      <option value="Comic">Comic</option>
+    </select>
+    <select id="sortFilter">
+      <option value="">-- Không sắp xếp --</option>
+      <option value="nameAsc">Tên A-Z</option>
+      <option value="nameDesc">Tên Z-A</option>
+      <option value="priceAsc">Giá tăng dần</option>
+      <option value="priceDesc">Giá giảm dần</option>
+      <option value="newest">Ngày mới nhất</option>
+      <option value="oldest">Ngày cũ nhất</option>
+    </select>
+  </div>
+
+  <!-- Danh sách sản phẩm -->
+  <div class="container">
+    <div id="productsGrid" class="grid"></div>
+    <p id="emptyMessage" class="empty" style="display:none;">Không có sản phẩm nào!</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBNHeF2yGDf3MDd6bRuSq47Gmcei3bndLI",
+    authDomain: "end-term-23d47.firebaseapp.com",
+    databaseURL: "https://end-term-23d47-default-rtdb.firebaseio.com",
+    projectId: "end-term-23d47",
+    storageBucket: "end-term-23d47.firebasestorage.app",
+    messagingSenderId: "370557866713",
+    appId: "1:370557866713:web:c31b37081afac84e5ba4c8",
+    measurementId: "G-KRBGK13R6H"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const productsGrid = document.getElementById("productsGrid");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const sortFilter = document.getElementById("sortFilter");
+
+    let productsData = [];
+
+    async function loadProducts() {
+      try {
+        const q = query(collection(db, "comic-book"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          emptyMessage.style.display = "block";
+          return;
+        }
+
+        productsData = [];
+        querySnapshot.forEach(doc => {
+          productsData.push({ id: doc.id, ...doc.data() });
+        });
+
+        renderProducts(productsData);
+      } catch (error) {
+        console.error("Lỗi khi tải sản phẩm:", error);
+      }
+    }
+
+    function renderProducts(products) {
+      if (products.length === 0) {
+        productsGrid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#777;">Không tìm thấy sản phẩm nào!</p>`;
+        return;
+      }
+
+      let html = "";
+      products.forEach(product => {
+        html += `
+          <div class="card">
+            <a href="../html/detail.html?title=${encodeURIComponent(product.title)}&price=${product.price}&image=${encodeURIComponent(product.imageUrl)}&category=${encodeURIComponent(product.category)}&desc=${encodeURIComponent(product.description || "")}">
+              <img src="${product.imageUrl}" alt="${product.title}">
+            </a>
+            <div class="card-body">
+              <div>
+                <h3 class="card-title">
+                  <a href="../html/detail.html?title=${encodeURIComponent(product.title)}&price=${product.price}&image=${encodeURIComponent(product.imageUrl)}&category=${encodeURIComponent(product.category)}&desc=${encodeURIComponent(product.description || "")}" style="text-decoration:none; color:#333;">
+                    ${product.title}
+                  </a>
+                </h3>
+                <p class="card-price">${product.price.toLocaleString()} VNĐ</p>
+                <p class="card-category">Thể loại: ${product.category}</p>
+              </div>
+              <button class="buy-btn" data-id="${product.id}" data-title="${product.title}" data-price="${product.price}" data-img="${product.imageUrl}">
+              Mua ngay
+            </button>
+          </div>
+        </div>
+      `;
+
+      });
+
+      productsGrid.innerHTML = html;
+
+      document.querySelectorAll(".buy-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const item = {
+            id: btn.dataset.id,
+            title: btn.dataset.title,
+            price: parseFloat(btn.dataset.price),
+            image: btn.dataset.img,
+            quantity: 1
+          };
+          addToCart(item);
+        });
+      });
+    }
+
+    function applyFilters() {
+      const searchValue = searchInput.value.toLowerCase();
+      const categoryValue = categoryFilter.value;
+      const sortValue = sortFilter.value;
+
+      let filtered = productsData.filter(product => {
+        const matchName = product.title.toLowerCase().includes(searchValue);
+        const matchCategory = categoryValue === "" || product.category === categoryValue;
+        return matchName && matchCategory;
+      });
+
+      if (sortValue === "nameAsc") {
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortValue === "nameDesc") {
+        filtered.sort((a, b) => b.title.localeCompare(a.title));
+      } else if (sortValue === "priceAsc") {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sortValue === "priceDesc") {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (sortValue === "newest") {
+        filtered.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds);
+      } else if (sortValue === "oldest") {
+        filtered.sort((a, b) => a.createdAt?.seconds - b.createdAt?.seconds);
+      }
+
+      renderProducts(filtered);
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    categoryFilter.addEventListener("change", applyFilters);
+    sortFilter.addEventListener("change", applyFilters);
+
+    function addToCart(item) {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const index = cart.findIndex(i => i.id === item.id);
+      if (index >= 0) {
+        cart[index].quantity += 1;
+      } else {
+        cart.push(item);
+      }
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateCartCount();
+      alert("✅ Đã thêm vào giỏ hàng!");
+    }
+
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("cartCount").textContent = totalItems;
+    }
+
+    loadProducts();
+    updateCartCount();
+  </script>
 </body>
 </html>

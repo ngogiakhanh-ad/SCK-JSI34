@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Giỏ hàng</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+  h1 { text-align: center; color: #673ab7; }
+  .cart-container { max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+  img { width: 60px; height: 80px; object-fit: cover; }
+  .remove-btn { color: red; cursor: pointer; font-weight: bold; }
+  .total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 15px; }
+  .checkout-btn { background: #4caf50; color: white; padding: 12px 20px; font-size: 16px; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; display: block; width: 100%; }
+  .checkout-btn:hover { background: #43a047; }
+  .back-btn { display: block; margin-top: 15px; text-align: center; color: #673ab7; font-weight: bold; text-decoration: none; }
+</style>
+</head>
+<body>
+  <h1>🛒 Giỏ hàng</h1>
+  <div class="cart-container">
+    <table id="cartTable">
+      <thead>
+        <tr>
+          <th>Ảnh</th>
+          <th>Sản phẩm</th>
+          <th>Giá</th>
+          <th>Số lượng</th>
+          <th>Xóa</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="total" id="totalPrice">Tổng: 0 VNĐ</p>
+    <button class="checkout-btn" id="checkoutBtn">Thanh toán</button>
+    <a href="../index.html" class="back-btn">⬅ Tiếp tục mua sắm</a>
+  </div>
+
+<script>
+  const tbody = document.querySelector("#cartTable tbody");
+  const totalPriceEl = document.getElementById("totalPrice");
+
+  function loadCart() {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    tbody.innerHTML = "";
+    let total = 0;
+
+    if (cart.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5">Giỏ hàng trống</td></tr>`;
+      document.getElementById("checkoutBtn").disabled = true;
+      return;
+    }
+
+    cart.forEach((item, index) => {
+      const subtotal = item.price * item.quantity;
+      total += subtotal;
+      const row = `
+        <tr>
+          <td><img src="${item.image}" alt="${item.title}"></td>
+          <td>${item.title}</td>
+          <td>${item.price.toLocaleString()} VNĐ</td>
+          <td>
+            <input type="number" min="1" value="${item.quantity}" data-index="${index}" class="qty-input" style="width:50px;">
+          </td>
+          <td><span class="remove-btn" data-index="${index}">X</span></td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    });
+
+    totalPriceEl.textContent = `Tổng: ${total.toLocaleString()} VNĐ`;
+
+    document.querySelectorAll(".remove-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        removeItem(btn.dataset.index);
+      });
+    });
+
+    document.querySelectorAll(".qty-input").forEach(input => {
+      input.addEventListener("change", () => {
+        updateQuantity(input.dataset.index, parseInt(input.value));
+      });
+    });
+  }
+
+  function removeItem(index) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    loadCart();
+  }
+
+  function updateQuantity(index, qty) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    if (qty > 0) {
+      cart[index].quantity = qty;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      loadCart();
+    }
+  }
+
+  document.getElementById("checkoutBtn").addEventListener("click", () => {
+    alert("Thanh toán thành công! (Giả lập)");
+    localStorage.removeItem("cart");
+    loadCart();
+  });
+
+  loadCart();
+</script>
+</body>
+</html>
